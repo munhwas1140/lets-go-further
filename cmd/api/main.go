@@ -21,7 +21,7 @@ type application struct {
 	logger *log.Logger
 }
 
-func main() {
+func NewApplication() (*application, config) {
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
@@ -30,10 +30,14 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
-	app := &application{
+	return &application{
 		config: cfg,
 		logger: logger,
-	}
+	}, cfg
+}
+
+func main() {
+	app, cfg := NewApplication()
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
@@ -43,8 +47,8 @@ func main() {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
+	app.logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
 	err := srv.ListenAndServe()
-	logger.Fatal(err)
+	app.logger.Fatal(err)
 
 }
